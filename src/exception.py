@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from logger import logging         # ✅ Correct — both files are in the same folder
+from src.logger import logging         # ✅ Correct — both files are in the same folder
 
 class CustomException(Exception):
     def __init__(self, error, detail=sys):
