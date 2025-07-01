@@ -26,3 +26,20 @@ conda activate myenv
 
 # Run the test script
 python src/test_exception.py
+
+
+
+""" To run the Data Ingestion.py file : python -m src.components.data_ingestion """
+
+Will Show :-
+
+✅ Train data saved at: artifacts/train.csv
+✅ Test data saved at: artifacts/test.csv
+✅ Data ingestion completed successfully.
+
+-----------------------------------------------------------------------------------------------
+-git init
+-git add .
+-git push origin main
+
+
