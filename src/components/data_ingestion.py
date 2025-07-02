@@ -1,59 +1,37 @@
-# src/components/data_ingestion.py
-
-import os
-import sys
+import os, sys
 import pandas as pd
-from dataclasses import dataclass
 from sklearn.model_selection import train_test_split
-
-from src.exception import CustomException
 from src.logger import logging
-
-
-@dataclass
-class DataIngestionConfig:
-    train_data_path: str = os.path.join('artifacts', "train.csv")
-    test_data_path: str = os.path.join('artifacts', "test.csv")
-    raw_data_path: str = os.path.join('artifacts', "data.csv")
-
+from src.exception import CustomException
+from src.components.data_transformation import DataTransformation
+from src.components.model_trainer import ModelTrainer
 
 class DataIngestion:
-    def __init__(self):
-        self.ingestion_config = DataIngestionConfig()
+    def __init__(self, raw_path="notebook/data/stud.csv", out_dir="artifacts"):
+        self.raw_path = raw_path
+        self.train_path = os.path.join(out_dir, "train.csv")
+        self.test_path = os.path.join(out_dir, "test.csv")
+        self.raw_out = os.path.join(out_dir, "data.csv")
+        os.makedirs(out_dir, exist_ok=True)
 
-    def initiate_data_ingestion(self):
-        logging.info("Data Ingestion method starts")
-
+    def run(self):
         try:
-            df = pd.read_csv('notebook/data/stud.csv')
-            logging.info("Dataset read as pandas DataFrame")
-
-            # Create output folder if it doesn't exist
-            os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
-
-            # Save raw data
-            df.to_csv(self.ingestion_config.raw_data_path, index=False, header=True)
-            logging.info("Raw data saved to artifacts/data.csv")
-
-            # Split and save train/test data
-            train_set, test_set = train_test_split(df, test_size=0.2, random_state=42)
-
-            train_set.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
-            test_set.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
-            logging.info("Train and Test data saved successfully")
-
-            return self.ingestion_config.train_data_path, self.ingestion_config.test_data_path
-
+            logging.info("Ingesting data...")
+            df = pd.read_csv(self.raw_path)
+            df.to_csv(self.raw_out, index=False)
+            train, test = train_test_split(df, test_size=0.2, random_state=42)
+            train.to_csv(self.train_path, index=False)
+            test.to_csv(self.test_path, index=False)
+            logging.info("Ingestion complete.")
+            return self.train_path, self.test_path
         except Exception as e:
             raise CustomException(e, sys)
 
-
 if __name__ == "__main__":
     try:
-        obj = DataIngestion()
-        train_data, test_data = obj.initiate_data_ingestion()
-        print(f"✅ Train data saved at: {train_data}")
-        print(f"✅ Test data saved at: {test_data}")
-        print("✅ Data ingestion completed successfully.")
+        train, test = DataIngestion().run()
+        train_arr, test_arr, _ = DataTransformation().initiate_data_transformation(train, test)
+        score = ModelTrainer().initiate_model_trainer(train_arr, test_arr)
+        print(f"✅ R² Score: {score:.4f}")
     except Exception as e:
-        print(f"❌ Error during data ingestion: {e}")
+        print(f"❌ Error: {e}")
