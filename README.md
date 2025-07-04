@@ -71,5 +71,8 @@ git add .
 git commit -m "Mid"
 git push origin main
 
-"""
 
+App.py : http://127.0.0.1:5001
+       : http://127.0.0.1:5001/predictdata
+
+"""
